@@ -1,0 +1,20 @@
+node {
+    stage ("Code") {
+        git "https://github.com/dudyalaGanesh/one.git"
+    }
+    stage("Build") {
+        def mavenHome = tool name:"maven",type:"maven"
+        def mavenCMD = "$mavenHome/bin/mvn"
+        sh "$mavenCMD clean package"
+    }
+    stage("Test") {
+        withSonarQubeEnv('mysonar') {
+            def mavenHome = tool name:"maven",type:"maven"
+            def mavenCMD = "$mavenHome/bin/mvn"
+            sh "$mavenCMD sonar:sonar"
+        }
+    }
+    stage("Deploy") {
+        nexusArtifactUploader artifacts: [[artifactId: 'myweb', classifier: '', file: 'myweb-8.4.6.war', type: 'war']], credentialsId: 'c8c021da-6356-43b0-92fb-99296908b7d4', groupId: 'in.javahome', nexusUrl: '3.142.82.118:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'ganesh', version: '8.4.6'
+    }
+}
